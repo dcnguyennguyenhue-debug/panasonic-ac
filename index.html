@@ -132,21 +132,27 @@
 
   <div class="footer">Điều khiển qua MQTT • HiveMQ</div>
 
-  <script>
+    <script>
     // ====== CẤU HÌNH – PHẢI GIỐNG VỚI ESP ======
     const TOPIC_CONTROL = "dcnguyen/panasonic/phongngu/control";
     const TOPIC_STATUS  = "dcnguyen/panasonic/phongngu/status";
     // ==========================================
 
-    const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+    const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt", {
+      clientId: "web-panasonic-" + Math.random().toString(16).substr(2, 8),
+      clean: true,
+      reconnectPeriod: 3000,
+      connectTimeout: 10000
+    });
 
-    onst modeNames = {
-  0: "Tự động",
-  1: "Làm lạnh",
-  2: "Sưởi",
-  3: "Hút ẩm",
-  4: "Quạt"
-};
+    // Mapping đúng theo thư viện IRremoteESP8266
+    const modeNames = {
+      0: "Tự động",
+      2: "Hút ẩm",
+      3: "Làm lạnh",
+      4: "Sưởi",
+      6: "Quạt"
+    };
 
     function setOnline(online) {
       const dot = document.getElementById("dot");
@@ -161,21 +167,24 @@
     }
 
     client.on("connect", () => {
+      console.log("✅ MQTT Connected");
       setOnline(true);
       client.subscribe(TOPIC_STATUS);
     });
 
     client.on("close", () => setOnline(false));
     client.on("offline", () => setOnline(false));
-    client.on("error", () => setOnline(false));
+    client.on("error", (err) => {
+      console.error("❌ MQTT Error:", err);
+      setOnline(false);
+    });
 
     client.on("message", (topic, payload) => {
       if (topic !== TOPIC_STATUS) return;
       try {
         const data = JSON.parse(payload.toString());
         document.getElementById("temp").textContent = data.temp ?? "--";
-        
-      //  let modeText = modeNames[data.mode] || "Không rõ";
+
         let modeText = modeNames[data.mode] || `Mode ${data.mode}`;
         if (data.power === "off") modeText = "Đã tắt";
         document.getElementById("modeLabel").textContent = modeText;
