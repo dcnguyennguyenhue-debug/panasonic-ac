@@ -175,7 +175,8 @@
         const data = JSON.parse(payload.toString());
         document.getElementById("temp").textContent = data.temp ?? "--";
         
-        let modeText = modeNames[data.mode] || "Không rõ";
+      //  let modeText = modeNames[data.mode] || "Không rõ";
+        let modeText = modeNames[data.mode] || `Mode ${data.mode}`;
         if (data.power === "off") modeText = "Đã tắt";
         document.getElementById("modeLabel").textContent = modeText;
       } catch (e) {
