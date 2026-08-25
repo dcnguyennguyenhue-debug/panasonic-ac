@@ -140,13 +140,13 @@
 
     const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
-    const modeNames = {
-      0: "Tự động",
-      1: "Làm lạnh",
-      2: "Sưởi",
-      3: "Hút ẩm",
-      4: "Quạt"
-    };
+    onst modeNames = {
+  0: "Tự động",
+  1: "Làm lạnh",
+  2: "Sưởi",
+  3: "Hút ẩm",
+  4: "Quạt"
+};
 
     function setOnline(online) {
       const dot = document.getElementById("dot");
