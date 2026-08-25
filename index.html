@@ -15,6 +15,7 @@
       --red: #ef4444;
       --blue: #3b82f6;
       --purple: #8b5cf6;
+      --orange: #f97316;
     }
     * { box-sizing: border-box; }
     body {
@@ -91,7 +92,16 @@
     .btn-off  { background: var(--red); }
     .btn-temp { background: var(--blue); }
     .btn-mode { background: var(--purple); }
+    .btn-fan  { background: var(--orange); }
     .full { grid-column: span 2; }
+
+    .section-title {
+      grid-column: span 2;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 8px 0 0;
+      text-align: center;
+    }
 
     .footer {
       margin-top: 24px;
@@ -124,15 +134,22 @@
       <button class="btn-temp" onclick="send('tempdown')">Nhiệt độ −</button>
 
       <button class="btn-mode" onclick="send('cool')">Làm lạnh</button>
-      <button class="btn-mode" onclick="send('heat')">Sưởi</button>
-      <button class="btn-mode" onclick="send('fan')">Quạt</button>
       <button class="btn-mode" onclick="send('dry')">Hút ẩm</button>
+      <button class="btn-mode" onclick="send('fan')">Quạt</button>
+      <button class="btn-mode" onclick="send('auto')">Tự động</button>
+
+      <div class="section-title">Tốc độ quạt</div>
+
+      <button class="btn-fan" onclick="send('fanauto')">Quạt Auto</button>
+      <button class="btn-fan" onclick="send('fanlow')">Quạt Thấp</button>
+      <button class="btn-fan" onclick="send('fanmed')">Quạt TB</button>
+      <button class="btn-fan" onclick="send('fanhigh')">Quạt Cao</button>
     </div>
   </div>
 
   <div class="footer">Điều khiển qua MQTT • HiveMQ</div>
 
-    <script>
+  <script>
     // ====== CẤU HÌNH – PHẢI GIỐNG VỚI ESP ======
     const TOPIC_CONTROL = "dcnguyen/panasonic/phongngu/control";
     const TOPIC_STATUS  = "dcnguyen/panasonic/phongngu/status";
@@ -145,13 +162,23 @@
       connectTimeout: 10000
     });
 
-    // Mapping đúng theo thư viện IRremoteESP8266
+    // Mapping mode đúng theo thư viện IRremoteESP8266
     const modeNames = {
       0: "Tự động",
       2: "Hút ẩm",
       3: "Làm lạnh",
       4: "Sưởi",
       6: "Quạt"
+    };
+
+    // Mapping tốc độ quạt
+    const fanNames = {
+      0: "Thấp nhất",
+      1: "Thấp",
+      2: "Trung bình",
+      3: "Cao",
+      4: "Cao nhất",
+      7: "Auto"
     };
 
     function setOnline(online) {
@@ -186,7 +213,12 @@
         document.getElementById("temp").textContent = data.temp ?? "--";
 
         let modeText = modeNames[data.mode] || `Mode ${data.mode}`;
-        if (data.power === "off") modeText = "Đã tắt";
+        if (data.power === "off") {
+          modeText = "Đã tắt";
+        } else {
+          const fanText = fanNames[data.fan] || data.fan;
+          modeText += ` • Quạt: ${fanText}`;
+        }
         document.getElementById("modeLabel").textContent = modeText;
       } catch (e) {
         console.error("Lỗi parse status", e);
